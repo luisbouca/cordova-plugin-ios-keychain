@@ -75,18 +75,18 @@
 }
 
 -(NSString *) dictionaryToString:(NSDictionary *)dic{
-    NSString * finalString = @"{\"";
+    NSString * finalString = @"{\"Key\":\"";
     Boolean first = true;
     for (NSString * key in @[@"acct",@"v_Data"]) {
         if (first) {
             first = false;
         }else{
-            finalString = [finalString stringByAppendingString:@","];
+            finalString = [finalString stringByAppendingString:@",\"Value\":\""];
         }
         if ([[dic valueForKey:key] isKindOfClass:[NSData class]]) {
             finalString = [finalString stringByAppendingString:[[[NSString alloc] initWithData:[dic valueForKey:key] encoding:NSUTF8StringEncoding] stringByAppendingString:@"\""]];
         }else{
-            finalString = [finalString stringByAppendingString:[[dic valueForKey:key] stringByAppendingString:@"\":\""]];
+            finalString = [finalString stringByAppendingString:[[dic valueForKey:key] stringByAppendingString:@"\""]];
         }
     }
     finalString = [finalString stringByAppendingString:@"}"];
