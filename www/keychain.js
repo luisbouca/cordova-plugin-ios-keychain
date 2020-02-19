@@ -25,6 +25,10 @@ var exec = require('cordova/exec');
 var Keychain = {
 	serviceName: "Keychain",
 
+	getAll: function(success, error, touchIDMessage) {
+        exec(success, error, this.serviceName, "getAll", [touchIDMessage]);
+    },
+
 	get: function(success, error, key, touchIDMessage) {
 		exec(success, error, this.serviceName, "get", [key, touchIDMessage]);
 	},

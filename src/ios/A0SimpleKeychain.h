@@ -298,6 +298,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)hasValueForKey:(NSString *)key;
 
+/**
+ *  Fetches All Generic Pairs from the keychain
+ *
+ *  @param message prompt message to display for TouchID/passcode prompt if neccesary
+ *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found
+ *                 or user authentication failed in TouchId case.
+ *
+ *  @return the value or nil if an error occurs.
+ */
+-(NSArray *) arrayForService:(nullable NSString*)message;
+
 ///---------------------------------------------------
 /// @name Create helper methods
 ///---------------------------------------------------

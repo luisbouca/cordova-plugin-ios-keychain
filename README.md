@@ -20,6 +20,17 @@ See the **example** folder for example usage.
 
 ```js
 /*
+ Retrieves all value/key pairs
+ 
+ @param successCallback returns the value as the argument to the callback when successful
+ @param failureCallback returns the error string as the argument to the callback, for a failure
+ @param key the key to retrieve
+ @param TouchIDMessage the message to show underneath the TouchID prompt (if any)
+ */
+Keychain.getAll(successCallback, failureCallback, 'TouchID Message');
+
+
+/*
  Retrieves a value for a key
  
  @param successCallback returns the value as the argument to the callback when successful

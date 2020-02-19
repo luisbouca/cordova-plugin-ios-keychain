@@ -22,6 +22,77 @@
 
 @implementation CDVKeychain
 
+- (void) getAll:(CDVInvokedUrlCommand*)command {
+  [self.commandDelegate runInBackground:^{
+    NSArray* arguments = command.arguments;
+    CDVPluginResult* pluginResult = nil;
+
+    if([arguments count] < 1) {
+      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+      messageAsString:@"incorrect number of arguments for getByUrlWithTouchID"];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+      return;
+    }
+
+    NSString *touchIDMessage = [arguments objectAtIndex:0];
+    NSString *message = NSLocalizedString(@"Please Authenticate", nil);
+       if(![touchIDMessage isEqual:[NSNull null]]) {
+         message = NSLocalizedString(touchIDMessage, @"Prompt TouchID message");
+       }
+    
+    A0SimpleKeychain *keychain = [A0SimpleKeychain keychain];
+
+    keychain.useAccessControl = YES;
+    keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
+      
+    NSArray *values = [keychain arrayForService:message];
+    NSString * valuesString = [self arrayToString:values];
+      
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:valuesString];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+  }];
+}
+
+
+-(NSString *) arrayToString:(NSArray *)array{
+    NSString * finalString = @"[";
+    Boolean firstItem = true;
+    Boolean first = true;
+    for (NSDictionary * item in array) {
+        if (firstItem) {
+            firstItem = false;
+        }else{
+            if (first) {
+                first = false;
+            }else{
+                finalString = [finalString stringByAppendingString:@","];
+            }
+            finalString = [finalString stringByAppendingString:[self dictionaryToString:item]];
+        }
+    }
+    finalString = [finalString stringByAppendingString:@"]" ];
+    return finalString;
+}
+
+-(NSString *) dictionaryToString:(NSDictionary *)dic{
+    NSString * finalString = @"{\"";
+    Boolean first = true;
+    for (NSString * key in @[@"acct",@"v_Data"]) {
+        if (first) {
+            first = false;
+        }else{
+            finalString = [finalString stringByAppendingString:@","];
+        }
+        if ([[dic valueForKey:key] isKindOfClass:[NSData class]]) {
+            finalString = [finalString stringByAppendingString:[[[NSString alloc] initWithData:[dic valueForKey:key] encoding:NSUTF8StringEncoding] stringByAppendingString:@"\""]];
+        }else{
+            finalString = [finalString stringByAppendingString:[[dic valueForKey:key] stringByAppendingString:@"\":\""]];
+        }
+    }
+    finalString = [finalString stringByAppendingString:@"}"];
+    return finalString;
+}
+
 - (void) get:(CDVInvokedUrlCommand*)command {
   [self.commandDelegate runInBackground:^{
     NSArray* arguments = command.arguments;

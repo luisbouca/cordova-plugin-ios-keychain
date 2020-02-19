@@ -162,9 +162,22 @@
     return status == errSecSuccess;
 }
 
+
+-(NSArray *) arrayForService:(NSString*)message{
+    NSDictionary *query = [self queryFindAll:message];
+    CFArrayRef result = nil;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
+    if (status == errSecSuccess || status == errSecItemNotFound) {
+      NSArray *items = [NSArray arrayWithArray:(__bridge NSArray *)result];
+      CFBridgingRelease(result);
+      return items;
+    }
+    return nil;
+}
+
 - (void)clearAll {
 #if TARGET_OS_IPHONE
-  NSDictionary *query = [self queryFindAll];
+    NSDictionary *query = [self queryFindAll:nil];
   CFArrayRef result = nil;
   OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
   if (status == errSecSuccess || status == errSecItemNotFound) {
@@ -288,13 +301,18 @@
 
     return attributes;
 }
-
-- (NSDictionary *)queryFindAll {
+- (NSDictionary *)queryFindAll:( NSString * _Nullable )message {
     NSMutableDictionary *query = [self baseQuery];
     [query addEntriesFromDictionary:@{
                                      (__bridge id)kSecReturnAttributes: @YES,
+                                     (__bridge id)kSecReturnData: @YES,
                                      (__bridge id)kSecMatchLimit: (__bridge id)kSecMatchLimitAll,
                                      }];
+    #if TARGET_OS_IPHONE
+        if (message) {
+            query[(__bridge id)kSecUseOperationPrompt] = message;
+        }
+    #endif
     return query;
 }
 

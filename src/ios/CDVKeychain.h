@@ -24,6 +24,7 @@
 @interface CDVKeychain : CDVPlugin {
 }
 
+- (void) getAll:(CDVInvokedUrlCommand*)command;
 - (void) get:(CDVInvokedUrlCommand*)command;
 - (void) set:(CDVInvokedUrlCommand*)command;
 - (void) remove:(CDVInvokedUrlCommand*)command;
