@@ -25,18 +25,18 @@ var exec = require('cordova/exec');
 var Keychain = {
 	serviceName: "Keychain",
 
-	getAll: function(success, error, touchIDMessage,url) {
-        exec(success, error, this.serviceName, "getAll", [touchIDMessage,url]);
+	getAll: function(success, error, touchIDMessage,icloud,url) {
+        exec(success, error, this.serviceName, "getAll", [touchIDMessage,icloud,url]);
     },
 
-	get: function(success, error, key, touchIDMessage,url) {
-		exec(success, error, this.serviceName, "get", [key, touchIDMessage,url]);
+	get: function(success, error, key, touchIDMessage,icloud,url) {
+		exec(success, error, this.serviceName, "get", [key, touchIDMessage,icloud,url]);
 	},
-	set: function(success, error, key, value, useTouchID,url) {
-		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID,url]);
+	set: function(success, error, key, value, useTouchID,icloud,url) {
+		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID,icloud,url]);
 	},
 
-	setJson: function(success, error, key, obj, useTouchID) {
+	setJson: function(success, error, key, obj, useTouchID,icloud) {
 		var value = JSON.stringify(obj);
 		value = value
 			.replace(/[\\]/g, '\\\\')
@@ -48,10 +48,10 @@ var Keychain = {
 			.replace(/[\r]/g, '\\r')
 			.replace(/[\t]/g, '\\t');
 
-		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID]);
+		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID,icloud]);
 	},
 
-	getJson: function(success, error, key, touchIDMessage) {
+	getJson: function(success, error, key, touchIDMessage,icloud) {
 		var cb = function(v) {
 			if(!v) {
 				success(null);
@@ -66,7 +66,7 @@ var Keychain = {
 				error(e);
 			}
 		};
-		exec(cb, error, this.serviceName, "get", [key, touchIDMessage]);
+		exec(cb, error, this.serviceName, "get", [key, touchIDMessage,icloud]);
 	},
 
 	remove: function(successCallback, failureCallback, key,url) {

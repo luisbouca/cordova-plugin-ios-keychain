@@ -141,6 +141,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (assign, nonatomic) BOOL useAccessControl;
 
+/**
+ *  Tells A0SimpleKeychain to use 'kkSecAttrSynchronizableAny' to sync keychain items to iCloud.
+ *  Default value is NO.
+ */
+@property (assign, nonatomic) BOOL icloudSync;
+
 ///---------------------------------------------------
 /// @name Initialization
 ///---------------------------------------------------

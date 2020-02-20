@@ -27,7 +27,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count]<1 || [arguments count]>2) {
+    if([arguments count]<2 || [arguments count]>3) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for getByUrlWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -35,6 +35,8 @@
     }
 
     NSString *touchIDMessage = [arguments objectAtIndex:0];
+    Boolean icloud = [[arguments objectAtIndex:1] boolValue];
+      
     NSString *message = NSLocalizedString(@"Please Authenticate", nil);
        if(![touchIDMessage isEqual:[NSNull null]]) {
          message = NSLocalizedString(touchIDMessage, @"Prompt TouchID message");
@@ -44,9 +46,10 @@
 
     keychain.useAccessControl = YES;
     keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
+    keychain.icloudSync = icloud;
     NSArray *values;
-    if ([arguments count] == 2) {
-        NSString *url = [arguments objectAtIndex:1];
+    if (![[arguments objectAtIndex:2] isKindOfClass:[NSNull class]]) {
+        NSString *url = [arguments objectAtIndex:2];
         values = [keychain arrayForServer:url message:message];
     }else{
         values = [keychain arrayOfAll:message];
@@ -62,16 +65,15 @@
     NSString * finalString = @"[";
     Boolean first = true;
     for (NSDictionary * item in array) {
-        if (first) {
-            first = false;
-        }else{
-            finalString = [finalString stringByAppendingString:@","];
-        }
         NSString *dictionaryString =[self dictionaryToString:item];
-        if ([dictionaryString isEqualToString:@""]) {
-            finalString = [finalString substringToIndex:[finalString length]-1];
-        }else{
-            finalString = [finalString stringByAppendingString:dictionaryString];
+        if (![dictionaryString isEqualToString:@""]) {
+            if (first) {
+                first = false;
+                finalString = [finalString stringByAppendingString:dictionaryString];
+            }else{
+                finalString = [finalString stringByAppendingString:@","];
+                finalString = [finalString stringByAppendingString:dictionaryString];
+            }
         }
     }
     finalString = [finalString stringByAppendingString:@"]" ];
@@ -112,7 +114,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 2 || [arguments count] > 3) {
+    if([arguments count] < 3 || [arguments count] > 4) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for getWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -121,6 +123,7 @@
 
     NSString *key = [arguments objectAtIndex:0];
     NSString *touchIDMessage = [arguments objectAtIndex:1];
+    Boolean icloud = [[arguments objectAtIndex:2] boolValue];
 
     NSString *message = NSLocalizedString(@"Please Authenticate", nil);
     if(![touchIDMessage isEqual:[NSNull null]]) {
@@ -131,9 +134,10 @@
 
     keychain.useAccessControl = YES;
     keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
+    keychain.icloudSync = icloud;
     NSString *value;
-    if ([arguments count] > 2) {
-        NSString * url = [arguments objectAtIndex:2];
+    if (![[arguments objectAtIndex:3] isKindOfClass:[NSNull class]]) {
+        NSString * url = [arguments objectAtIndex:3];
         value = [keychain stringForKey:key withUrl:url promptMessage:message];
     }else{
         value = [keychain stringForKey:key withUrl:nil promptMessage:message];
@@ -149,7 +153,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 2 || [arguments count] > 4) {
+    if([arguments count] < 4 || [arguments count] > 5) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for setWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -161,13 +165,15 @@
     NSString* key = [arguments objectAtIndex:0];
     NSString* value = [arguments objectAtIndex:1];
     BOOL useTouchID = [[arguments objectAtIndex:2] boolValue];
+    Boolean icloud = [[arguments objectAtIndex:3] boolValue];
+    keychain.icloudSync = icloud;
     if(useTouchID) {
       keychain.useAccessControl = YES;
       keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
     }
   
-    if([arguments count] > 3){
-      NSString* url = [arguments objectAtIndex:3];
+    if(![[arguments objectAtIndex:4] isKindOfClass:[NSNull class]]){
+      NSString* url = [arguments objectAtIndex:4];
       [keychain setString:value forKey:key withUrl:url];
     }else{
       [keychain setString:value forKey:key withUrl:nil];
@@ -195,7 +201,7 @@
     if ([keychain hasValueForKey:key]) {
         [keychain deleteEntryForGenericKey:key];
     }
-    if ([arguments count] > 1) {
+    if (![[arguments objectAtIndex:1] isKindOfClass:[NSNull class]]) {
         NSString *url = [arguments objectAtIndex:1];
         if([keychain hasValueForKeyUrl:key withUrl:url]){
             [keychain deleteEntryForInternetKeyUrlPair:key withUrl:url];

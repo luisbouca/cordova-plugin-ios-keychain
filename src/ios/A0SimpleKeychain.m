@@ -44,6 +44,7 @@
         _accessGroup = accessGroup;
         _defaultAccessiblity = A0SimpleKeychainItemAccessibleAfterFirstUnlock;
         _useAccessControl = NO;
+        _icloudSync = NO;
     }
     return self;
 }
@@ -480,6 +481,10 @@
         attributes[(__bridge id)kSecAttrAccessGroup] = self.accessGroup;
     }
 #endif
+    
+    if (self.icloudSync) {
+        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kSecAttrSynchronizableAny : NO;
+    }
 
     return attributes;
 }
@@ -493,6 +498,10 @@
         attributes[(__bridge id)kSecAttrAccessGroup] = self.accessGroup;
     }
 #endif
+    
+    if (self.icloudSync) {
+        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kSecAttrSynchronizableAny : NO;
+    }
 
     return attributes;
 }
