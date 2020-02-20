@@ -27,7 +27,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 1) {
+    if([arguments count]<1 || [arguments count]>2) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for getByUrlWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -44,10 +44,14 @@
 
     keychain.useAccessControl = YES;
     keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
-      
-    NSArray *values = [keychain arrayForService:message];
-    NSString * valuesString = [self arrayToString:values];
-      
+    NSArray *values;
+    if ([arguments count] == 2) {
+        NSString *url = [arguments objectAtIndex:1];
+        values = [keychain arrayForServer:url message:message];
+    }else{
+        values = [keychain arrayOfAll:message];
+    }
+      NSString * valuesString = [self arrayToString:values];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:valuesString];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   }];
@@ -56,18 +60,18 @@
 
 -(NSString *) arrayToString:(NSArray *)array{
     NSString * finalString = @"[";
-    Boolean firstItem = true;
     Boolean first = true;
     for (NSDictionary * item in array) {
-        if (firstItem) {
-            firstItem = false;
+        if (first) {
+            first = false;
         }else{
-            if (first) {
-                first = false;
-            }else{
-                finalString = [finalString stringByAppendingString:@","];
-            }
-            finalString = [finalString stringByAppendingString:[self dictionaryToString:item]];
+            finalString = [finalString stringByAppendingString:@","];
+        }
+        NSString *dictionaryString =[self dictionaryToString:item];
+        if ([dictionaryString isEqualToString:@""]) {
+            finalString = [finalString substringToIndex:[finalString length]-1];
+        }else{
+            finalString = [finalString stringByAppendingString:dictionaryString];
         }
     }
     finalString = [finalString stringByAppendingString:@"]" ];
@@ -80,6 +84,16 @@
     for (NSString * key in @[@"acct",@"v_Data"]) {
         if (first) {
             first = false;
+            if ([[dic valueForKey:key] isKindOfClass:[NSData class]]) {
+                if ([[[NSString alloc] initWithData:[dic valueForKey:key] encoding:NSUTF8StringEncoding] isEqualToString:@"_pfo"]) {
+                    return @"";
+                }
+            }else{
+                if ([[dic valueForKey:key] isEqualToString:@"_pfo"]) {
+                    return @"";
+                }
+            }
+            
         }else{
             finalString = [finalString stringByAppendingString:@",\"Value\":\""];
         }
@@ -98,7 +112,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 2) {
+    if([arguments count] < 2 || [arguments count] > 3) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for getWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -117,8 +131,13 @@
 
     keychain.useAccessControl = YES;
     keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
-
-    NSString *value = [keychain stringForKey:key promptMessage:message];
+    NSString *value;
+    if ([arguments count] > 2) {
+        NSString * url = [arguments objectAtIndex:2];
+        value = [keychain stringForKey:key withUrl:url promptMessage:message];
+    }else{
+        value = [keychain stringForKey:key withUrl:nil promptMessage:message];
+    }
 
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:value];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -130,26 +149,29 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 3) {
+    if([arguments count] < 2 || [arguments count] > 4) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for setWithTouchID"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
       return;
     }
 
+    A0SimpleKeychain *keychain = [A0SimpleKeychain keychain];
+
     NSString* key = [arguments objectAtIndex:0];
     NSString* value = [arguments objectAtIndex:1];
     BOOL useTouchID = [[arguments objectAtIndex:2] boolValue];
-   
-    A0SimpleKeychain *keychain = [A0SimpleKeychain keychain];
-
     if(useTouchID) {
       keychain.useAccessControl = YES;
       keychain.defaultAccessiblity = A0SimpleKeychainItemAccessibleWhenPasscodeSetThisDeviceOnly;
     }
-
-    [keychain setString:value forKey:key];
-
+  
+    if([arguments count] > 3){
+      NSString* url = [arguments objectAtIndex:3];
+      [keychain setString:value forKey:key withUrl:url];
+    }else{
+      [keychain setString:value forKey:key withUrl:nil];
+    }
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   }];
@@ -160,7 +182,7 @@
     NSArray* arguments = command.arguments;
     CDVPluginResult* pluginResult = nil;
 
-    if([arguments count] < 1) {
+    if([arguments count] < 1 || [arguments count]>2) {
       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
       messageAsString:@"incorrect number of arguments for remove"];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -170,7 +192,16 @@
     NSString *key = [arguments objectAtIndex:0];
 
     A0SimpleKeychain *keychain = [A0SimpleKeychain keychain];
-    [keychain deleteEntryForKey:key];
+    if ([keychain hasValueForKey:key]) {
+        [keychain deleteEntryForGenericKey:key];
+    }
+    if ([arguments count] > 1) {
+        NSString *url = [arguments objectAtIndex:1];
+        if([keychain hasValueForKeyUrl:key withUrl:url]){
+            [keychain deleteEntryForInternetKeyUrlPair:key withUrl:url];
+        }
+    }
+    
 
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

@@ -25,15 +25,15 @@ var exec = require('cordova/exec');
 var Keychain = {
 	serviceName: "Keychain",
 
-	getAll: function(success, error, touchIDMessage) {
-        exec(success, error, this.serviceName, "getAll", [touchIDMessage]);
+	getAll: function(success, error, touchIDMessage,url) {
+        exec(success, error, this.serviceName, "getAll", [touchIDMessage,url]);
     },
 
-	get: function(success, error, key, touchIDMessage) {
-		exec(success, error, this.serviceName, "get", [key, touchIDMessage]);
+	get: function(success, error, key, touchIDMessage,url) {
+		exec(success, error, this.serviceName, "get", [key, touchIDMessage,url]);
 	},
-	set: function(success, error, key, value, useTouchID) {
-		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID]);
+	set: function(success, error, key, value, useTouchID,url) {
+		exec(success, error, this.serviceName, "set", [key, value, !!useTouchID,url]);
 	},
 
 	setJson: function(success, error, key, obj, useTouchID) {
@@ -69,7 +69,7 @@ var Keychain = {
 		exec(cb, error, this.serviceName, "get", [key, touchIDMessage]);
 	},
 
-	remove: function(successCallback, failureCallback, key) {
+	remove: function(successCallback, failureCallback, key,url) {
 		exec(successCallback, failureCallback, this.serviceName, "remove", [key]);
 	}
 };

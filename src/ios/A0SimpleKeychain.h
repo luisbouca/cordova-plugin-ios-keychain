@@ -63,7 +63,7 @@ typedef NS_ENUM(NSInteger, A0SimpleKeychainItemAccessible) {
 #define A0ErrorDomain @"com.auth0.simplekeychain"
 
 /**
- * Enum with keychain error codes. It's a mirror of the keychain error codes. 
+ * Enum with keychain error codes. It's a mirror of the keychain error codes.
  */
 typedef NS_ENUM(NSInteger, A0SimpleKeychainError) {
     /**
@@ -176,14 +176,15 @@ NS_ASSUME_NONNULL_BEGIN
 ///---------------------------------------------------
 
 /**
- *  Saves the NSString with the type `kSecClassGenericPassword` in the keychain.
+ *  Saves the NSString in the keychain.
  *
  *  @param string value to save in the keychain
  *  @param key    key for the keychain entry.
+ *  @param url    url of the website to which this key/value belongs
  *
  *  @return if the value was saved it will return YES. Otherwise it'll return NO.
  */
-- (BOOL)setString:(NSString *)string forKey:(NSString *)key;
+- (BOOL)setString:(NSString *)string forKey:(NSString *)key withUrl:(nullable NSString *)url;
 
 /**
  *  Saves the NSData with the type `kSecClassGenericPassword` in the keychain.
@@ -196,26 +197,28 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)setData:(NSData *)data forKey:(NSString *)key;
 
 /**
- *  Saves the NSString with the type `kSecClassGenericPassword` in the keychain.
+ *  Saves the NSString in the keychain.
  *
  *  @param string   value to save in the keychain
  *  @param key      key for the keychain entry.
+ *  @param url    url of the website to which this key/value belongs
  *  @param message  prompt message to display for TouchID/passcode prompt if neccesary
  *
  *  @return if the value was saved it will return YES. Otherwise it'll return NO.
  */
-- (BOOL)setString:(NSString *)string forKey:(NSString *)key promptMessage:(nullable NSString *)message;
+- (BOOL)setString:(NSString *)string forKey:(NSString *)key withUrl:(nullable NSString *)url promptMessage:(nullable NSString *)message;
 
 /**
  *  Saves the NSData with the type `kSecClassGenericPassword` in the keychain.
  *
  *  @param string   value to save in the keychain
  *  @param key      key for the keychain entry.
+ *  @param url    url of the website
  *  @param message  prompt message to display for TouchID/passcode prompt if neccesary
  *
  *  @return if the value was saved it will return YES. Otherwise it'll return NO.
  */
-- (BOOL)setData:(NSData *)data forKey:(NSString *)key promptMessage:(nullable NSString *)message;
+- (BOOL)setData:(NSData *)data forKey:(NSString *)key withUrl:(nullable NSString *)url promptMessage:(nullable NSString *)message;
 
 ///---------------------------------------------------
 /// @name Remove values
@@ -228,12 +231,31 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return If the entry was removed it will return YES. Otherwise it will return NO.
  */
-- (BOOL)deleteEntryForKey:(NSString *)key;
+- (BOOL)deleteEntryForGenericKey:(NSString *)key;
+
+///---------------------------------------------------
+/// @name Remove values
+///---------------------------------------------------
 
 /**
- *  Remove all entries from the kechain with the service and access group values.
+ *  Removes an entry from the Keychain using its key and url
+ *
+ *  @param key the key of the entry to delete.
+ *  @param url the url of the entry to delete.
+ *
+ *  @return If the entry was removed it will return YES. Otherwise it will return NO.
  */
-- (void)clearAll;
+- (BOOL)deleteEntryForInternetKeyUrlPair:(NSString *)key withUrl:(NSString *)url;
+
+/**
+ *  Remove all Genericpassword entries from the kechain with the service and access group values.
+ */
+- (void)clearAllGeneric;
+
+/**
+ *  Remove all Internetpassword entries from the kechain with the service and access group values.
+ */
+- (void)clearAllInternet;
 
 ///---------------------------------------------------
 /// @name Obtain values
@@ -248,46 +270,102 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable NSString *)stringForKey:(NSString *)key;
 
+///---------------------------------------------------
+/// @name Obtain values
+///---------------------------------------------------
+
+/**
+ *  Fetches a NSString from the keychain
+ *
+ *  @param url the url of the value to fetch
+ *  @param message prompt message to display for TouchID/passcode prompt if neccesary
+ *
+ *  @return the value or nil if an error occurs.
+ */
+- (nullable NSString *)stringForUrl:(NSString *)url promptMessage:(nullable NSString *)message;
+
+///---------------------------------------------------
+/// @name Obtain values
+///---------------------------------------------------
+
+/**
+ *  Fetches a NSString from the keychain
+ *
+ *  @param key the key of the value to fetch
+ *  @param url the server of the value to fetch
+ *
+ *  @return the value or nil if an error occurs.
+ */
+- (nullable NSString *)stringForKeyUrl:(NSString *)key withUrl:(NSString *)url;
+
 /**
  *  Fetches a NSData from the keychain
  *
  *  @param key the key of the value to fetch
+ *  @param url the url of the value to fetch(optional)
  *
  *  @return the value or nil if an error occurs.
  */
-- (nullable NSData *)dataForKey:(NSString *)key;
+- (nullable NSData *)dataForKey:(NSString *)key withUrl:(nullable NSString *)url;
 
 /**
  *  Fetches a NSString from the keychain
  *
  *  @param key     the key of the value to fetch
+ *  @param url     the url of the value to fetch(optional)
  *  @param message prompt message to display for TouchID/passcode prompt if neccesary
  *
  *  @return the value or nil if an error occurs.
  */
-- (nullable NSString *)stringForKey:(NSString *)key promptMessage:(nullable NSString *)message;
+- (nullable NSString *)stringForKey:(NSString *)key withUrl:(nullable NSString *)url promptMessage:(nullable NSString *)message;
 
 /**
  *  Fetches a NSData from the keychain
  *
  *  @param key     the key of the value to fetch
+ *  @param url     the url of the value to fetch(optional)
  *  @param message prompt message to display for TouchID/passcode prompt if neccesary
  *
  *  @return the value or nil if an error occurs.
  */
-- (nullable NSData *)dataForKey:(NSString *)key promptMessage:(nullable NSString *)message;
+- (nullable NSData *)dataForKey:(NSString *)key withUrl:(nullable NSString *)url promptMessage:(nullable NSString *)message;
 
 /**
  *  Fetches a NSData from the keychain
  *
  *  @param key     the key of the value to fetch
+ *  @param url     the url of the value to fetch(optional)
  *  @param message prompt message to display for TouchID/passcode prompt if neccesary
- *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found 
+ *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found
  *                 or user authentication failed in TouchId case.
  *
  *  @return the value or nil if an error occurs.
  */
-- (nullable NSData *)dataForKey:(NSString *)key promptMessage:(nullable NSString *)message error:(NSError **)err;
+- (nullable NSData *)dataForKey:(NSString *)key withUrl:(nullable NSString *)url promptMessage:(nullable NSString *)message error:(NSError **)err;
+
+
+/**
+ *  Fetches All Generic Pairs from the keychain
+ *
+ *  @param message prompt message to display for TouchID/passcode prompt if neccesary
+ *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found
+ *                 or user authentication failed in TouchId case.
+ *
+ *  @return the value or nil if an error occurs.
+ */
+-(NSArray *) arrayOfAll:(nullable NSString*)message;
+
+/**
+ *  Fetches All Internet Pairs from the keychain
+ *
+ *  @param url     the url of the value to fetch
+ *  @param message prompt message to display for TouchID/passcode prompt if neccesary
+ *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found
+ *                 or user authentication failed in TouchId case.
+ *
+ *  @return the value or nil if an error occurs.
+ */
+-(NSArray *) arrayForServer:(NSString *) url message:(nullable NSString*)message;
 
 /**
  *  Checks if a key has a value in the Keychain
@@ -299,15 +377,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)hasValueForKey:(NSString *)key;
 
 /**
- *  Fetches All Generic Pairs from the keychain
+ *  Checks if a url has a value in the Keychain
  *
- *  @param message prompt message to display for TouchID/passcode prompt if neccesary
- *  @param err     Returns an error, if the item cannot be retrieved. F.e. item not found
- *                 or user authentication failed in TouchId case.
+ *  @param url the url to check if it has a value
  *
- *  @return the value or nil if an error occurs.
+ *  @return if the key has an associated value in the Keychain or not.
  */
--(NSArray *) arrayForService:(nullable NSString*)message;
+- (BOOL)hasValueForUrl:(NSString *)url;
+
+/**
+ *  Checks if a key url pair has a value in the Keychain
+ *
+ *  @param key the key to check if it has a value
+ *  @param url the url to check if it has a value
+ *
+ *  @return if the key has an associated value in the Keychain or not.
+ */
+- (BOOL)hasValueForKeyUrl:(NSString *)key withUrl:(NSString *)url;
 
 ///---------------------------------------------------
 /// @name Create helper methods
