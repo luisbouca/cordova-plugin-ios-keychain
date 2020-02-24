@@ -483,7 +483,7 @@
 #endif
     
     if (self.icloudSync) {
-        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kSecAttrSynchronizableAny : NO;
+        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kCFBooleanTrue : (__bridge id)kCFBooleanFalse;
     }
 
     return attributes;
@@ -500,7 +500,7 @@
 #endif
     
     if (self.icloudSync) {
-        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kSecAttrSynchronizableAny : NO;
+        attributes[(__bridge id)kSecAttrSynchronizable] = self.icloudSync ? (__bridge id)kCFBooleanTrue : (__bridge id)kCFBooleanFalse;
     }
 
     return attributes;
